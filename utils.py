@@ -17,12 +17,24 @@ def save_checkpoint(model, model_dir, epoch):
     # save the checkpoint.
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
-    torch.save({'state': model.state_dict(), 'epoch': epoch}, path)
 
+    # this is the old save
+    # torch.save({'state': model.state_dict(), 'epoch': epoch}, path)
+
+    # Save model parameters and state
+    checkpoint = {
+        'state_dict': model.state_dict(),  # Saves the actual model weights
+        'epoch': epoch,
+        'label': model.label,
+        'image_size': model.image_size,
+        'channel_num': model.channel_num,
+        'kernel_num': model.kernel_num,
+        'z_size': model.z_size
+    }
+
+    torch.save(checkpoint, path)
     # notify that we successfully saved the checkpoint.
-    print('=> saved the model {name} to {path}'.format(
-        name=model.name, path=path
-    ))
+    print(f'=> Saved the model {model.name} to {path}')
 
 
 def load_checkpoint(model, model_dir):
