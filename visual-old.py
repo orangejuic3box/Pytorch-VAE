@@ -4,6 +4,7 @@ from visdom import Visdom
 
 _WINDOW_CASH = {}
 
+
 def _vis(env='main'):
     return Visdom(env=env)
 
@@ -92,7 +93,8 @@ def visualize_scalars(scalars, names, title, iteration, env='main'):
     # Convert scalar tensors to numpy arrays.
     scalars, names = list(scalars), list(names)
     scalars = [s.cpu() if isinstance(s, CUDATensor) else s for s in scalars]
-    scalars = [s.numpy() if hasattr(s, 'numpy') else np.array([s]) for s in scalars]
+    scalars = [s.numpy() if hasattr(s, 'numpy') else np.array([s]) for s in
+               scalars]
     multi = len(scalars) > 1
     num = len(scalars)
 
@@ -117,8 +119,8 @@ def visualize_scalars(scalars, names, title, iteration, env='main'):
     Y = np.column_stack(scalars) if multi else scalars[0]
 
     if title in _WINDOW_CASH:
-        # Use the 'line' method to update the plot with new data.
-        _vis(env).line(X=X, Y=Y, win=_WINDOW_CASH[title], update='append', opts=options)
+        # _vis(env).updateTrace(X=X, Y=Y, win=_WINDOW_CASH[title], opts=options)
+        _vis(env).update(X=X, Y=Y, win=_WINDOW_CASH[title], opts=options)
+
     else:
-        # Create a new plot if the window doesn't exist.
         _WINDOW_CASH[title] = _vis(env).line(X=X, Y=Y, opts=options)
