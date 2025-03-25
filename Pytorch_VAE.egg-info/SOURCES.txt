@@ -1,0 +1,7 @@
+LICENSE
+README.md
+setup.py
+Pytorch_VAE.egg-info/PKG-INFO
+Pytorch_VAE.egg-info/SOURCES.txt
+Pytorch_VAE.egg-info/dependency_links.txt
+Pytorch_VAE.egg-info/top_level.txt
