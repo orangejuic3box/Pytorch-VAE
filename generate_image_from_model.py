@@ -6,50 +6,60 @@ Generates an image and displays it on the vis server
 
 import torch
 import argparse
-from torch import nn
 import visdom
-from model import VAE  # Replace with the actual import of your model
+from model import VAE  # Import the VAE model
 
 # Step 1: Set up command-line argument parsing
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate image from trained VAE model")
     parser.add_argument('--checkpoint', type=str, required=True, help="Path to the trained model checkpoint")
-    parser.add_argument('--latent_dim', type=int, default=100, help="Latent space dimension")
     parser.add_argument('--batch_size', type=int, default=64, help="Batch size for generating images")
     return parser.parse_args()
 
-def generate_image_from_model(checkpoint_path, latent_dim=100, batch_size=64):
-    # Step 2: Load the Trained Model
-    model = VAE()  # Replace with the actual model initialization
-    checkpoint = torch.load(checkpoint_path)  # Path to your checkpoint
-    model.load_state_dict(checkpoint['model_state_dict'])
-    model.eval()  # Set the model to evaluation mode
+# Step 2: Load model with correct parameters
+def load_model_from_checkpoint(checkpoint_path):
+    checkpoint = torch.load(checkpoint_path, map_location='cuda' if torch.cuda.is_available() else 'cpu')
 
-    # Step 3: Generate a Random Sample (from latent space)
-    z = torch.randn(batch_size, latent_dim)  # Batch of random latent vectors
+    # Retrieve saved parameters from the checkpoint
+    label = checkpoint['label']
+    image_size = checkpoint['image_size']
+    channel_num = checkpoint['channel_num']
+    kernel_num = checkpoint['kernel_num']
+    z_size = checkpoint['z_size']
 
-    # Generate the image(s) using the decoder (assuming your model has a decode method)
-    with torch.no_grad():  # Disable gradient calculation during inference
-        generated_images = model.decode(z)  # Modify if your model uses different function names
+    # Initialize VAE with extracted parameters
+    model = VAE(label, image_size, channel_num, kernel_num, z_size)
 
-    # Step 4: Visualize the Image using Visdom
-    # First, initialize Visdom
+    # Load model weights
+    model.load_state_dict(checkpoint['state_dict'])
+    model.eval()  # Set to evaluation mode
+
+    return model, z_size
+
+# Step 3: Generate and visualize images
+def generate_image_from_model(checkpoint_path, batch_size=64):
+    model, z_size = load_model_from_checkpoint(checkpoint_path)
+
+    # Generate random latent vectors
+    device = 'cuda' if torch.cuda.is_available() else 'cpu'
+    z = torch.randn(batch_size, z_size, device=device)
+
+    # Generate images
+    with torch.no_grad():  # No gradients needed during inference
+        generated_images = model.sample(batch_size)  # Use `sample()` instead of `decode()`
+
+    # Step 4: Visualize using Visdom
     vis = visdom.Visdom()
 
-    # If you want to visualize the first image in the batch
-    image_to_display = generated_images[0]  # Get the first image from the batch
+    # Get the first generated image
+    image_to_display = generated_images[0].cpu().numpy()  # Convert to NumPy
 
-    # Normalize the image (Visdom requires the image to be in the range [0, 1])
-    image_to_display = image_to_display.cpu().numpy()  # Move the tensor to CPU and convert to NumPy
+    # Normalize to [0,1] for visualization
     image_to_display = (image_to_display - image_to_display.min()) / (image_to_display.max() - image_to_display.min())
 
-    # Visualize using Visdom's image display function
+    # Display image in Visdom
     vis.image(image_to_display, win='generated_image', opts=dict(title='Generated Image'))
 
-
 if __name__ == '__main__':
-    # Parse the command-line arguments
     args = parse_args()
-
-    # Generate an image from the model and visualize it
-    generate_image_from_model(args.checkpoint, args.latent_dim, args.batch_size)
+    generate_image_from_model(args.checkpoint, args.batch_size)
