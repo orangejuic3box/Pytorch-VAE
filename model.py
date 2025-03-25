@@ -70,10 +70,18 @@ class VAE(nn.Module):
     def z(self, mean, logvar):
         std = logvar.mul(0.5).exp_()
         eps = (
-            Variable(torch.randn(std.size())).cuda() if self._is_on_cuda else
-            Variable(torch.randn(std.size()))
+            torch.randn(std.size(), device='cuda') if torch.cuda.is_available() else torch.randn(std.size())
         )
         return eps.mul(std).add_(mean)
+
+    '''From Mags: original z func, bad cuda assert err'''
+    # def z(self, mean, logvar):
+    #     std = logvar.mul(0.5).exp_()
+    #     eps = (
+    #         Variable(torch.randn(std.size())).cuda() if self._is_on_cuda else
+    #         Variable(torch.randn(std.size()))
+    #     )
+    #     return eps.mul(std).add_(mean)
 
     def reconstruction_loss(self, x_reconstructed, x):
         return nn.BCELoss(size_average=False)(x_reconstructed, x) / x.size(0)
@@ -100,16 +108,27 @@ class VAE(nn.Module):
         )
 
     def sample(self, size):
-        z = Variable(
-            torch.randn(size, self.z_size).cuda() if self._is_on_cuda() else
-            torch.randn(size, self.z_size)
-        )
+        device = 'cuda' if torch.cuda.is_available() else 'cpu'
+        z = torch.randn(size, self.z_size, device=device)
         z_projected = self.project(z).view(
             -1, self.kernel_num,
             self.feature_size,
             self.feature_size,
         )
         return self.decoder(z_projected).data
+
+    '''From Mags: original sample func, bad cuda assert error'''
+    # def sample(self, size):
+    #     z = Variable(
+    #         torch.randn(size, self.z_size).cuda() if self._is_on_cuda() else
+    #         torch.randn(size, self.z_size)
+    #     )
+    #     z_projected = self.project(z).view(
+    #         -1, self.kernel_num,
+    #         self.feature_size,
+    #         self.feature_size,
+    #     )
+    #     return self.decoder(z_projected).data
 
     def _is_on_cuda(self):
         return next(self.parameters()).is_cuda
