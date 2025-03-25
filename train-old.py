@@ -1,9 +1,3 @@
-'''Modified verion of train-old.py because of no cuda environment.
-
-Getting a tensor Index err bc of 0-dim tensor, need to convert to a number
-
-'''
-
 from torch import optim
 from torch.autograd import Variable
 from tqdm import tqdm
@@ -68,16 +62,16 @@ def train_model(model, dataset, epochs=10,
                 trained=batch_index * len(x),
                 total=len(data_loader.dataset),
                 progress=(100. * batch_index / len(data_loader)),
-                total_loss=total_loss.item(),  # Change here
-                reconstruction_loss=reconstruction_loss.item(),  # Change here
-                kl_divergence_loss=kl_divergence_loss.item(),  # Change here
+                total_loss=total_loss.data[0],
+                reconstruction_loss=reconstruction_loss.data[0],
+                kl_divergence_loss=kl_divergence_loss.data[0],
             ))
 
             if iteration % loss_log_interval == 0:
                 losses = [
-                    reconstruction_loss.item(),  # Change here
-                    kl_divergence_loss.item(),  # Change here
-                    total_loss.item()  # Change here
+                    reconstruction_loss.data[0],
+                    kl_divergence_loss.data[0],
+                    total_loss.data[0]
                 ]
                 names = ['reconstruction', 'kl divergence', 'total']
                 visual.visualize_scalars(
