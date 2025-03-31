@@ -84,7 +84,14 @@ class VAE(nn.Module):
     #     return eps.mul(std).add_(mean)
 
     def reconstruction_loss(self, x_reconstructed, x):
-        return nn.BCELoss(size_average=False)(x_reconstructed, x) / x.size(0)
+        # MSE loss instead of BCELoss
+        return nn.MSELoss(reduction='mean')(x_reconstructed, x)
+
+        # gets rid of warning, -> weird loss results very small
+        # return nn.BCELoss(reduction='mean')(x_reconstructed, x)
+
+        # original -> has warning from size_average
+        # return nn.BCELoss(size_average=False)(x_reconstructed, x) / x.size(0)
 
     def kl_divergence_loss(self, mean, logvar):
         return ((mean**2 + logvar.exp() - 1 - logvar) / 2).mean()
