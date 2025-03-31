@@ -4,7 +4,7 @@ import torch
 import torchvision
 from model import VAE
 from data import TRAIN_DATASETS, DATASET_CONFIGS
-from train import train_model
+from train import train_model, train_model_nc
 
 
 parser = argparse.ArgumentParser('VAE PyTorch implementation')
@@ -52,7 +52,20 @@ if __name__ == '__main__':
         vae.cuda()
 
     # run a test or a training process.
-    if args.train:
+    if args.dataset == "noisy_clean":
+        train_model_nc(
+            vae, dataset=dataset,
+            epochs=args.epochs,
+            batch_size=args.batch_size,
+            sample_size=args.sample_size,
+            lr=args.lr,
+            weight_decay=args.weight_decay,
+            checkpoint_dir=args.checkpoint_dir,
+            loss_log_interval=args.loss_log_interval,
+            image_log_interval=args.image_log_interval,
+            resume=args.resume,
+            cuda=cuda,)
+    elif args.train: #this is the og git version
         train_model(
             vae, dataset=dataset,
             epochs=args.epochs,
@@ -66,6 +79,6 @@ if __name__ == '__main__':
             resume=args.resume,
             cuda=cuda,
         )
-    else:
+    else: #this is not actually testing, this is just sampling from the model
         images = vae.sample(args.sample_size)
         torchvision.utils.save_image(images, args.sample_dir)
