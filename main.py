@@ -11,14 +11,15 @@ parser = argparse.ArgumentParser('VAE PyTorch implementation')
 parser.add_argument('--dataset', default='mnist',
                     choices=list(TRAIN_DATASETS.keys()))
 
-parser.add_argument('--kernel-num', type=int, default=128)
-parser.add_argument('--z-size', type=int, default=128)
+parser.add_argument('--kernel-num', type=int, default=128) #128
+parser.add_argument('--z-size', type=int, default=128 ) #64 #128
 
-parser.add_argument('--epochs', type=int, default=10)
-parser.add_argument('--batch-size', type=int, default=32)
+parser.add_argument('--epochs', type=int, default=25) #10
+parser.add_argument('--batch-size', type=int, default=64) #32
 parser.add_argument('--sample-size', type=int, default=32)
-parser.add_argument('--lr', type=float, default=5e-03)
-parser.add_argument('--weight-decay', type=float, default=1e-03)
+
+parser.add_argument('--lr', type=float, default=1e-04) #5e-03 $5e-04
+parser.add_argument('--weight-decay', type=float, default=1e-3) #1e-03
 
 parser.add_argument('--loss-log-interval', type=int, default=100)
 parser.add_argument('--image-log-interval', type=int, default=500)
