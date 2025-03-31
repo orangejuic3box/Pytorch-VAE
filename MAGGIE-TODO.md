@@ -14,12 +14,17 @@ pip install -r requirements.txt
 conda env create
 
 (3) activate vm envr
-conda activate Pytorch-vae
+conda activate pytorch-vae
 
 (4) setup in development mode (only do this if envr was deleted or new envr)
 pip install -e 
 
 
 (5) start visdom server for visualization
-python -m visdom.server
 
+nohup visdom > visdom.log 2>&1 &
+
+
+
+()deacrivate envr
+conda deactivate
