@@ -99,6 +99,11 @@ def train_model(model, dataset, epochs=10,
         print('#############')
         print()
 
+        model_dict = {"epochs":epochs,
+                      "batch_size":batch_size,
+                      "weight_decay":weight_decay,
+                      "lr":lr}
+
         # save the checkpoint.
-        utils.save_checkpoint(model, checkpoint_dir, epoch)
+        utils.save_checkpoint(model, checkpoint_dir, model_dict)
         print()

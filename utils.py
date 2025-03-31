@@ -11,20 +11,30 @@ def get_data_loader(dataset, batch_size, cuda=False):
     )
 
 
-def save_checkpoint(model, model_dir, epoch):
-    path = os.path.join(model_dir, model.name)
+def save_checkpoint(model, model_dir, model_dict,custom=""):
+    #general path directory
+    if custom == "":
+        epochs = model_dict["epochs"]
+        batch_size = model_dict["batch_size"]
+        weight_decay = model_dict["weight_decay"]
+        lr = model_dict["lr"]
+
+        path = os.path.join(
+            model_dir, f"VAE-{model.kernel_num}k-{model.label}-{model.channel_num}x{model.image_size}x{model.image_size}-z{model.z_size}-batch{batch_size}-wd{weight_decay}-epochs{epochs}-lr{lr}"
+        )
+    #path directory for resp experiment
+    else:
+        path = os.path.join(model_dir, custom)
+
 
     # save the checkpoint.
     if not os.path.exists(model_dir):
         os.makedirs(model_dir)
 
-    # this is the old save
-    # torch.save({'state': model.state_dict(), 'epoch': epoch}, path)
 
     # Save model parameters and state
     checkpoint = {
         'state_dict': model.state_dict(),  # Saves the actual model weights
-        'epoch': epoch,
         'label': model.label,
         'image_size': model.image_size,
         'channel_num': model.channel_num,
@@ -37,8 +47,13 @@ def save_checkpoint(model, model_dir, epoch):
     print(f'=> Saved the model {model.name} to {path}')
 
 
-def load_checkpoint(model, model_dir):
-    path = os.path.join(model_dir, model.name)
+def load_checkpoint(model, model_dir, custom=""):
+    #general path
+    if custom == "":
+        path = os.path.join(model_dir, model.name)
+    #experiment path
+    else:
+        path = os.path.join(model_dir, custom)
 
     # load the checkpoint.
     checkpoint = torch.load(path)
