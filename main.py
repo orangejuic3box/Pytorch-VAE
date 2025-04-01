@@ -12,7 +12,7 @@ parser.add_argument('--dataset', default='mnist',
                     choices=list(TRAIN_DATASETS.keys()))
 
 parser.add_argument('--kernel-num', type=int, default=128) #128
-parser.add_argument('--z-size', type=int, default=128 ) #64 #128
+parser.add_argument('--z-size', type=int, default=256 ) #64 #128
 
 parser.add_argument('--epochs', type=int, default=25) #10
 parser.add_argument('--batch-size', type=int, default=64) #32
@@ -53,6 +53,7 @@ if __name__ == '__main__':
 
     # run a test or a training process.
     if args.dataset == "noisy_clean":
+        print("training for noisy clean")
         train_model_nc(
             vae, dataset=dataset,
             epochs=args.epochs,
@@ -61,11 +62,10 @@ if __name__ == '__main__':
             lr=args.lr,
             weight_decay=args.weight_decay,
             checkpoint_dir=args.checkpoint_dir,
-            loss_log_interval=args.loss_log_interval,
-            image_log_interval=args.image_log_interval,
             resume=args.resume,
             cuda=cuda,)
     elif args.train: #this is the og git version
+        print("training for NOT noisy clean")
         train_model(
             vae, dataset=dataset,
             epochs=args.epochs,
