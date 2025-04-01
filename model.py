@@ -105,6 +105,7 @@ class VAE(nn.Module):
         return (
             'VAE'
             '-{kernel_num}k'
+            '-z{z}'
             '-{label}'
             '-{channel_num}x{image_size}x{image_size}'
         ).format(
@@ -112,6 +113,7 @@ class VAE(nn.Module):
             kernel_num=self.kernel_num,
             image_size=self.image_size,
             channel_num=self.channel_num,
+            z=self.z_size,
         )
 
     def sample(self, size):
