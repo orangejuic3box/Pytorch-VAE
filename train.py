@@ -124,7 +124,7 @@ def train_model_nc(model, dataset, epochs=10,
     )
 
     if resume:
-        epoch_start = utils.load_checkpoint(model, checkpoint_dir)
+        epoch_start = utils.load_checkpoint(model, "./checkpoints", custom=checkpoint_dir)
     else:
         epoch_start = 1
     
@@ -244,5 +244,5 @@ def train_model_nc(model, dataset, epochs=10,
                       "lr":lr}
 
         # save the checkpoint.
-        utils.save_checkpoint(model, checkpoint_dir, model_dict, custom=f"VAE-RESPONSIBILITY-EXPERIMENT-noKL-epochs{epochs}")
+        utils.save_checkpoint(model, checkpoint_dir, model_dict, custom=f"{model.name}-epochs{epochs}-lr{lr}-wd{weight_decay}-noKL")
         print()
