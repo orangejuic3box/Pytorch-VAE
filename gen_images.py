@@ -2,6 +2,7 @@ import torch
 import argparse
 import visdom
 from model import VAE  # Import the VAE model
+from noisy_clean_dataset import get_nc_datasets
 
 # Step 1: Set up command-line argument parsing
 def parse_args():
@@ -60,6 +61,7 @@ def generate_image_from_model(checkpoint_path, batch_size=64):
 
 if __name__ == '__main__':
     args = parse_args()
+    
     if args.checkpoint:
         #generates image to visdom server
         generate_image_from_model(args.checkpoint, args.batch_size)
@@ -68,13 +70,23 @@ if __name__ == '__main__':
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
         vae = VAE(label='test', image_size=32, channel_num=3, kernel_num=128, z_size=128).to(device)
 
-        # Generate a random latent vector
-        z = torch.randn(1, vae.z_size, device=device)
+        # Take a batch of real images from your dataset
+        train_loader, _, _ = get_nc_datasets()
 
-        # Pass it through the projection layer
+        # Get a batch of real images from the DataLoader
+        data_iter = iter(train_loader)  # Create an iterator
+        x_real, _ = next(data_iter)  # Get the first batch (ignoring labels if they exist)
+
+        x_real = x_real.to(device)
+
+        # Encode the image
+        encoded = vae.encoder(x_real)
+        mean, logvar = vae.q(encoded)
+        z = vae.z(mean, logvar)
+
+        # Project and decode
         z_projected = vae.project(z).view(-1, vae.kernel_num, vae.feature_size, vae.feature_size)
+        x_reconstructed = vae.decoder(z_projected)
 
-        # Generate an image
-        generated_image = vae.decoder(z_projected)
+        print(f"Reconstructed image shape: {x_reconstructed.shape}")  # Should be (1, 3, 32, 32)
 
-        print(f"Generated image shape: {generated_image.shape}")  # Should be (1, 3, 32, 32)
