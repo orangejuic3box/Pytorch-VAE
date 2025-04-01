@@ -21,9 +21,10 @@ pip install -e
 
 
 (5) start visdom server for visualization
-
+python -m visdom.server
 nohup visdom > visdom.log 2>&1 &
 
+python main.py --train --dataset noisy_clean --epochs 25 --batch-size 64
 
 
 ()deacrivate envr
