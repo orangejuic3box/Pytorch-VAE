@@ -73,11 +73,14 @@ def get_nc_datasets():
     noisyclean_dataset = NoisyCleanDataset(noisy_images, clean_images)
 
     #split into train, test, validate
-    #calculate size of each dataset 80-10-10 split
+    #total 1111 pairs, 101 original images with 11 noisy images
+    # 81-10-10
     data_size = len(noisyclean_dataset)
-    train_size = int(0.8 * data_size)
-    test_size = int(0.1 * data_size)
-    val_size = data_size - train_size - test_size
+    train_size = 891
+    test_size = 110
+    val_size = 110
+    print(data_size, train_size, test_size, val_size)
+    assert (train_size+test_size+val_size == data_size, F"DATASET SIZE SPLIT DOES NOT MATCH")
 
     #split noisyclean into train, test, val
     train_dataset, test_dataset, val_dataset = random_split(noisyclean_dataset, [train_size, test_size, val_size])
