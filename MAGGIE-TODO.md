@@ -29,3 +29,6 @@ python main.py --train --dataset noisy_clean --epochs 25 --batch-size 64
 
 ()deacrivate envr
 conda deactivate
+
+
+potentially change z in new model
