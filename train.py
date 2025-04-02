@@ -12,6 +12,7 @@ import visual
 import math
 
 
+
 def train_model(model, dataset, epochs=10,
                 batch_size=32, sample_size=32,
                 lr=3e-04, weight_decay=1e-5,
@@ -116,6 +117,9 @@ def train_model_nc(model, dataset, epochs=10,
                 checkpoint_dir='./checkpoints',
                 resume=False,
                 cuda=False):
+    #xaiver weights?
+    model.apply_xavier_initialization()
+    
     # prepare optimizer and model
     model.train()
     optimizer = optim.Adam(
@@ -158,12 +162,14 @@ def train_model_nc(model, dataset, epochs=10,
             # flush gradients and run the model forward
             optimizer.zero_grad()
             # forward pass
-            (mean, logvar), x_reconstructed = model(noisy_x)
+            (mean, logvar), x_reconstructed = model(noisy_x) #model.forward is being called here
            
             # get loss 
             reconstruction_loss = model.reconstruction_loss(x_reconstructed, clean_x)
             # kl_divergence_loss = model.kl_divergence_loss(mean, logvar)
             total_loss = reconstruction_loss #+ kl_divergence_loss
+
+            # print("what happened to loss?", total_loss, "iter", iteration)
 
             # backprop gradients from the loss
             total_loss.backward()
@@ -191,7 +197,8 @@ def train_model_nc(model, dataset, epochs=10,
                 # kl_divergence_loss=kl_divergence_loss.item(),  # Change here
             ))
 
-            
+            parameter_str = f'w/ lr {lr}, z{model.z_size}, k{model.kernel_num}, epochs{epochs}'
+
             if iteration % batches_per_epoch == 0: #0 doesnt work bc iteragions too small?
                 losses = [
                     reconstruction_loss.item(),  # Change here
@@ -201,13 +208,13 @@ def train_model_nc(model, dataset, epochs=10,
                 names = ['reconstruction', 'kl divergence', 'total']
                 name = ['reconstruction']
                 visual.visualize_scalars(
-                    losses, name, 'loss',
+                    losses, name, f'loss {parameter_str}',
                     iteration, env=model.name)
 
             if iteration % (batches_per_epoch) == 0:
                 images = model.sample(sample_size)
                 visual.visualize_images(
-                    images, f'generated samples',
+                    images, f'generated samples {parameter_str}',
                     env=model.name
                 )
             
@@ -241,7 +248,8 @@ def train_model_nc(model, dataset, epochs=10,
         model_dict = {"epochs":epochs,
                       "batch_size":batch_size,
                       "weight_decay":weight_decay,
-                      "lr":lr}
+                      "lr":lr,
+                      "epoch":epoch}
 
         # save the checkpoint.
         utils.save_checkpoint(model, checkpoint_dir, model_dict, custom=f"{model.name}-epochs{epochs}-lr{lr}-wd{weight_decay}-noKL")
