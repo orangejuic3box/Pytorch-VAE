@@ -13,22 +13,12 @@ class MVAE(nn.Module):
         self.layers = layers
 
         # Encoder
+        # dynamically creates number of layers
         self.encoder = nn.Sequential(*[
             self._conv(channel_num if i == 0 else kernel_num // (2 ** (self.layers - i)), 
                     kernel_num // (2 ** (self.layers - i - 1)))
             for i in range(self.layers)
         ])
-
-
-        # # 5 layers
-        # self.encoder = nn.Sequential( 
-        #     # self._conv(channel_num, kernel_num // 8),  # Smaller filters at first
-        #     self._conv(channel_num, kernel_num // 16),
-        #     self._conv(kernel_num // 16, kernel_num // 8),
-        #     self._conv(kernel_num // 8, kernel_num // 4),
-        #     self._conv(kernel_num // 4, kernel_num // 2),
-        #     self._conv(kernel_num // 2, kernel_num),  # Increase capacity
-        # )
         
         # Encoded feature's size and volume
         self.feature_size = image_size // (2 ** self.layers)#32#16#8
@@ -42,30 +32,15 @@ class MVAE(nn.Module):
         self.project = self._linear(z_size, self.feature_volume, relu=False)
 
         # Decoder
+        # dynamically creates number of layers
         self.decoder = nn.Sequential(
             *[
                 self._deconv(kernel_num // (2 ** i), kernel_num // (2 ** (i + 1)))
                 for i in range(layers - 1)
             ],
             self._deconv(kernel_num // (2 ** (layers - 1)), channel_num),  # Final layer to match input channels
-            nn.Sigmoid()
+            nn.ReLU()  # nn.Sigmoid()
         )
-
-        # # 5 layers
-        # self.decoder = nn.Sequential(
-        #     self._deconv(kernel_num, kernel_num // 2),
-        #     self._deconv(kernel_num // 2, kernel_num // 4),
-        #     self._deconv(kernel_num // 4, kernel_num // 8),
-        #     self._deconv(kernel_num // 8, kernel_num // 16),
-        #     self._deconv(kernel_num // 16, channel_num),
-        #     # self._deconv(kernel_num // 8, channel_num),
-        #     nn.Sigmoid()
-        # )
-
-
-    
-
-
 
     def apply_xavier_initialization(self):
         # Manually initialize the weights for Conv and Linear layers
