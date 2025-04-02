@@ -39,7 +39,8 @@ def save_checkpoint(model, model_dir, model_dict,custom=""):
         'image_size': model.image_size,
         'channel_num': model.channel_num,
         'kernel_num': model.kernel_num,
-        'z_size': model.z_size
+        'z_size': model.z_size,
+        'epoch': model_dict["epoch"]
     }
 
     torch.save(checkpoint, path)
