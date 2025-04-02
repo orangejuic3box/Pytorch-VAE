@@ -20,6 +20,15 @@ class VAE(nn.Module):
             self._conv(kernel_num // 2, kernel_num),
         )
 
+        #slightly more complex encoder
+        # self.encoder = nn.Sequential(
+        #     self._conv(channel_num, kernel_num // 8),  # Smaller filters at first
+        #     self._conv(kernel_num // 8, kernel_num // 4),
+        #     self._conv(kernel_num // 4, kernel_num // 2),
+        #     self._conv(kernel_num // 2, kernel_num),  # Increase capacity
+        # )
+
+
         # encoded feature's size and volume
         self.feature_size = image_size // 8
         self.feature_volume = kernel_num * (self.feature_size ** 2)
@@ -38,6 +47,24 @@ class VAE(nn.Module):
             self._deconv(kernel_num // 4, channel_num),
             nn.Sigmoid()
         )
+
+        #slightly more complex decoder
+        # self.decoder = nn.Sequential(
+        #     self._deconv(kernel_num, kernel_num // 2),
+        #     self._deconv(kernel_num // 2, kernel_num // 4),
+        #     self._deconv(kernel_num // 4, kernel_num // 8),  # More layers
+        #     self._deconv(kernel_num // 8, channel_num),
+        #     nn.Sigmoid()  # Output layer
+        # )
+
+    def apply_xavier_initialization(self):
+        # Manually initialize the weights for Conv and Linear layers
+        for layer in self.modules():
+            if isinstance(layer, nn.Conv2d) or isinstance(layer, nn.ConvTranspose2d):
+                nn.init.xavier_uniform_(layer.weight)
+            elif isinstance(layer, nn.Linear):
+                nn.init.xavier_uniform_(layer.weight)
+        print("charles xavier was here")
 
     def forward(self, x):
         # encode x
@@ -86,7 +113,6 @@ class VAE(nn.Module):
     def reconstruction_loss(self, x_reconstructed, x):
         # MSE loss instead of BCELoss
         return nn.MSELoss(reduction='mean')(x_reconstructed, x)
-
         # gets rid of warning, -> weird loss results very small
         # return nn.BCELoss(reduction='mean')(x_reconstructed, x)
 
