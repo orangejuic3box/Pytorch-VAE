@@ -7,12 +7,13 @@ from noisy_clean_dataset import get_nc_datasets
 # Step 1: Set up command-line argument parsing
 def parse_args():
     parser = argparse.ArgumentParser(description="Generate image from trained VAE model")
-    parser.add_argument('--checkpoint', type=str, help="Path to the trained model checkpoint")
+    parser.add_argument('--checkpoint', type=str, help="Full Path to the trained model checkpoint")
     parser.add_argument('--batch_size', type=int, default=64, help="Batch size for generating images")
     return parser.parse_args()
 
 # Step 2: Load model with correct parameters
 def load_model_from_checkpoint(checkpoint_path):
+    #must be full checkpoint path
     checkpoint = torch.load(checkpoint_path, map_location='cuda' if torch.cuda.is_available() else 'cpu')
 
     # Retrieve saved parameters from the checkpoint
@@ -24,6 +25,8 @@ def load_model_from_checkpoint(checkpoint_path):
 
     # Initialize VAE with extracted parameters
     model = VAE(label, image_size, channel_num, kernel_num, z_size)
+    print("model made whats in the dict")
+    print(checkpoint["state_dict"].keys())
 
     # Load model weights
     model.load_state_dict(checkpoint['state_dict'])
