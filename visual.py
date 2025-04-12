@@ -7,26 +7,90 @@ _WINDOW_CASH = {}
 def _vis(env='main'):
     return Visdom(env=env)
 
+import numpy as np
+import torch
+from PIL import Image
 
 def visualize_image(tensor, name, label=None, env='main', w=250, h=250,
                     update_window_without_label=False):
-    tensor = tensor.cpu() if isinstance(tensor, CUDATensor) else tensor
+    # Ensure tensor is on CPU for compatibility
+    tensor = tensor.cpu() if isinstance(tensor, torch.Tensor) else tensor
+
+    # Convert tensor to numpy array if it's a torch tensor
+    if isinstance(tensor, torch.Tensor):
+        tensor = tensor.detach().numpy()
+
+    # Ensure the tensor is of the shape (height, width, channels) for RGB images
+    if tensor.ndim != 3 or tensor.shape[-1] != 3:
+        raise ValueError("Expected an RGB image with shape (H, W, 3). Got shape {}".format(tensor.shape))
+
+    # # Normalize if the values are not in [0, 1] or [0, 255]
+    # if tensor.max() > 1:
+    #     tensor = tensor / 255.0  # Normalize to [0, 1] if it is too large
+
+    # Ensure the tensor is in the proper range [0, 255] and dtype uint8
+    tensor = np.clip(tensor, 0, 255).astype(np.uint8)
+
+    # Title and visualization using Visdom
     title = name + ('-{}'.format(label) if label is not None else '')
 
-    _WINDOW_CASH[title] = _vis(env).image(
-        tensor.numpy(), win=_WINDOW_CASH.get(title),
-        opts=dict(title=title, width=w, height=h)
-    )
+    # Create a PIL Image and show it
+    try:
+        im = Image.fromarray(tensor)
+        print("WHAT IS THE FUCKING PROBLEM")
+        im_array = np.array(im)
+        print(im_array.size, im_array.shape)
+        print("WHAT IS THE FUCKING PROBLEM not the im array")
+        _WINDOW_CASH[title] = _vis(env).image(
+            im_array, win=_WINDOW_CASH.get(title),
+            opts=dict(title=name, width=w, height=h)
+        )
+        print("WHAT IS THE FUCKING PROBLEM DAWG")
+    except Exception as e:
+        print(f"Error converting tensor to image: {e}")
+        exit(0)
 
-    # This is useful when you want to maintain the most recent images.
+    # # Create a PIL Image and show it
+    # im = Image.fromarray(tensor)
+
+    
+
+    # _WINDOW_CASH[title] = _vis(env).image(
+    #     np.array(im), win=_WINDOW_CASH.get(title),
+    #     opts=dict(title=title, width=w, height=h)
+    # )
+
     if update_window_without_label:
         _WINDOW_CASH[name] = _vis(env).image(
-            tensor.numpy(), win=_WINDOW_CASH.get(name),
+            np.array(im), win=_WINDOW_CASH.get(name),
             opts=dict(title=name, width=w, height=h)
         )
 
 
-def visualize_images(tensor, name, label=None, env='main', w=250, h=250,
+# def visualize_image(tensor, name, label=None, env='main', w=250, h=250,
+#                     update_window_without_label=False):
+#     # Check if the input is a PyTorch tensor; if so, convert to NumPy.
+#     if not isinstance(tensor, np.ndarray):
+#         # If the tensor is on GPU, move it to CPU first.
+#         tensor = tensor.cpu() if hasattr(tensor, "cpu") else tensor
+#         tensor = tensor.numpy()
+        
+#     title = name + ('-{}'.format(label) if label is not None else '')
+
+#     _WINDOW_CASH[title] = _vis(env).image(
+#         tensor, win=_WINDOW_CASH.get(title),
+#         opts=dict(title=title, width=w, height=h)
+#     )
+
+#     # Update a separate window without label if requested
+#     if update_window_without_label:
+#         _WINDOW_CASH[name] = _vis(env).image(
+#             tensor, win=_WINDOW_CASH.get(name),
+#             opts=dict(title=name, width=w, height=h)
+#         )
+
+
+def visualize_images(tensor, name, label=None, env='main', w=850, h=450,
                      update_window_without_label=False):
     tensor = tensor.cpu() if isinstance(tensor, CUDATensor) else tensor
     title = name + ('-{}'.format(label) if label is not None else '')
@@ -99,15 +163,15 @@ def visualize_scalars(scalars, names, title, iteration, env='main'):
     options = dict(
         fillarea=True,
         legend=names,
-        width=400,
+        width=800,
         height=400,
         xlabel='Iterations',
-        ylabel=title,
+        ylabel="Loss",
         title=title,
-        marginleft=30,
+        marginleft=70,
         marginright=30,
         marginbottom=80,
-        margintop=30,
+        margintop=50,
     )
 
     X = (
