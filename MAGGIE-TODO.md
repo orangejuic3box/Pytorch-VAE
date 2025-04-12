@@ -24,11 +24,18 @@ pip install -e
 python -m visdom.server
 nohup visdom > visdom.log 2>&1 &
 
+
+(6) kill visdom server
+ps aux | grep visdom
+
+kill pid
+
+(7)deacrivate envr
+conda deactivate
+
+
 python main.py --train --dataset noisy_clean --epochs 25 --batch-size 64
 
-
-()deacrivate envr
-conda deactivate
 
 
 potentially change z in new model
