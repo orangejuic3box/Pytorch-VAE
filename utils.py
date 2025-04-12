@@ -28,8 +28,12 @@ def save_checkpoint(model, model_dir, model_dict,custom=""):
 
 
     # save the checkpoint.
-    if not os.path.exists(model_dir):
-        os.makedirs(model_dir)
+    if not os.path.exists(path):
+        os.makedirs(path)
+        print("made the path", path)
+
+    print("directory", model_dir)
+    print("path", path)
 
 
     # Save model parameters and state
@@ -40,10 +44,14 @@ def save_checkpoint(model, model_dir, model_dict,custom=""):
         'channel_num': model.channel_num,
         'kernel_num': model.kernel_num,
         'z_size': model.z_size,
-        'epoch': model_dict["epoch"]
+        'epoch': model_dict["epoch"],
+        'optimizer': model_dict["optimizer"],
+        'model':model
     }
+    # Ensure to save with a file name
+    checkpoint_path = os.path.join(path, "checkpoint.pth")
 
-    torch.save(checkpoint, path)
+    torch.save(checkpoint, checkpoint_path)
     # notify that we successfully saved the checkpoint.
     print(f'=> Saved the model {model.name} to {path}')
 
@@ -55,17 +63,27 @@ def load_checkpoint(model, model_dir, custom=""):
     #experiment path
     else:
         path = os.path.join(model_dir, custom)
+        print(f"the path traveled: {model_dir} + {custom}")
 
+
+    print("pls load the path", path)
     # load the checkpoint.
     checkpoint = torch.load(path)
     print('=> loaded checkpoint of {name} from {path}'.format(
         name=model.name, path=(path)
     ))
 
+    print("attempting a thing")
+    print(model.encoder)
+    
     # load parameters and return the checkpoint's epoch and precision.
-    model.load_state_dict(checkpoint['state'])
+    model.load_state_dict(checkpoint['state_dict'])
+  
+
+
     epoch = checkpoint['epoch']
-    return epoch
+    optimizer = checkpoint["optimizer"]
+    return epoch, optimizer
 
 
 def xavier_initialize(model):
