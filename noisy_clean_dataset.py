@@ -49,9 +49,33 @@ class NoisyCleanDataset(Dataset):
         noisy = self.noisy_images[idx]  # Shape (32, 32, 3)
         clean = self.clean_images[idx]  # Shape (32, 32, 3)
 
-        # Convert from NumPy (H, W, C) to PyTorch Tensor (C, H, W) for VAE
-        noisy = torch.tensor(noisy, dtype=torch.float32).permute(2, 0, 1) / 255.0 #normalizes the image
-        clean = torch.tensor(clean, dtype=torch.float32).permute(2, 0, 1) / 255.0 #normalizes the image
+        # print(type(noisy),noisy.shape)
+
+        # # Check the raw min and max before normalization
+        # print(f"Raw min value of noisy image: {noisy.min()}")
+        # print(f"Raw max value of noisy image: {noisy.max()}")
+
+        # # Convert from NumPy (H, W, C) to PyTorch Tensor (C, H, W) for VAE
+        # noisy = torch.tensor(noisy, dtype=torch.float32).permute(2, 0, 1) / 255.0 #normalizes the image
+        # clean = torch.tensor(clean, dtype=torch.float32).permute(2, 0, 1) / 255.0 #normalizes the image
+        
+        # Normalize the values to the range [0, 1]
+        noisy = (noisy - noisy.min()) / (noisy.max() - noisy.min())  # Normalize noisy image to [0, 1]
+        clean = (clean - clean.min()) / (clean.max() - clean.min())  # Normalize clean image to [0, 1]
+
+        # Convert from NumPy (H, W, C) to PyTorch Tensor (C, H, W)
+        noisy = torch.tensor(noisy, dtype=torch.float32).permute(2, 0, 1)
+        clean = torch.tensor(clean, dtype=torch.float32).permute(2, 0, 1)
+        
+        
+        
+        # print("AFTER NORNAIZATION IN GET ITEM NOISY CLEAN")
+        # print(f"Min value of noisy image: {noisy.min().item()}")
+        # print(f"Max value of noisy image: {noisy.max().item()}")
+
+
+
+
 
         return noisy, clean
 
@@ -76,20 +100,28 @@ def get_nc_datasets():
     #total 1111 pairs, 101 original images with 11 noisy images
     # 81-10-10
     data_size = len(noisyclean_dataset)
-    train_size = 891
-    test_size = 110
+    n=81
+    train_size = 11*n
+    test_size = 110 + (891-train_size)
     val_size = 110
     print(data_size, train_size, test_size, val_size)
-    assert (train_size+test_size+val_size == data_size, F"DATASET SIZE SPLIT DOES NOT MATCH")
+    assert_string = f"DATASET SIZE SPLIT DOES NOT MATCH {train_size}+{test_size}+{val_size}={train_size+test_size+val_size} should be {data_size}"
+    assert (train_size+test_size+val_size == data_size, assert_string)
 
     #split noisyclean into train, test, val
-    train_dataset, test_dataset, val_dataset = random_split(noisyclean_dataset, [train_size, test_size, val_size])
-
+    #plit into subsets SAME SUBSET EVERY TIME U BITCH
+    train_dataset = torch.utils.data.Subset(noisyclean_dataset, range(0, train_size))  # First 'train_size' items
+    test_dataset = torch.utils.data.Subset(noisyclean_dataset, range(train_size, train_size + test_size))  # Next 'test_size' items
+    val_dataset = torch.utils.data.Subset(noisyclean_dataset, range(train_size + test_size, train_size + test_size + val_size))  # Next 'val_size' items
+    experiment_dataset = torch.utils.data.Subset(noisyclean_dataset, range(train_size, train_size + test_size + val_size))
+   
+   
     #make dataloaders for each dataset
     batch_size = 64
     #train is shuffled so model doesn't memorize order, test and val are NOT shuffled so testing is consistent
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True) 
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    experiment_loader = DataLoader(experiment_dataset, batch_sampler=batch_size) #potentionally change this?
 
-    return train_loader, test_loader, val_loader
+    return train_loader, test_loader, val_loader, experiment_loader
