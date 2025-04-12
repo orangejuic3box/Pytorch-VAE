@@ -13,18 +13,18 @@ class MVAE(nn.Module):
         self.layers = layers
 
         # Encoder
-        # dynamically creates number of layers
-        self.encoder = nn.Sequential(*[
-            self._conv(channel_num if i == 0 else kernel_num // (2 ** (self.layers - i)), 
-                    kernel_num // (2 ** (self.layers - i - 1)))
-            for i in range(self.layers)
-        ])
+        # 3 layers
+        self.encoder = nn.Sequential(
+            self._conv(channel_num, kernel_num // 4),
+            self._conv(kernel_num // 4, kernel_num // 2),
+            self._conv(kernel_num // 2, kernel_num),
+        )
         
         # Encoded feature's size and volume
         self.feature_size = image_size // (2 ** self.layers)#32#16#8
         self.feature_volume = kernel_num * (self.feature_size ** 2)
 
-        # Latent space aka q?
+        # Latent space aka q
         self.q_mean = self._linear(self.feature_volume, z_size, relu=False)
         self.q_logvar = self._linear(self.feature_volume, z_size, relu=False)
 
@@ -32,14 +32,11 @@ class MVAE(nn.Module):
         self.project = self._linear(z_size, self.feature_volume, relu=False)
 
         # Decoder
-        # dynamically creates number of layers
         self.decoder = nn.Sequential(
-            *[
-                self._deconv(kernel_num // (2 ** i), kernel_num // (2 ** (i + 1)))
-                for i in range(layers - 1)
-            ],
-            self._deconv(kernel_num // (2 ** (layers - 1)), channel_num),  # Final layer to match input channels
-            nn.ReLU()  # nn.Sigmoid()
+            self._deconv(kernel_num, kernel_num // 2),
+            self._deconv(kernel_num // 2, kernel_num // 4),
+            self._deconv(kernel_num // 4, channel_num),
+            nn.Sigmoid()
         )
 
     def apply_xavier_initialization(self):
@@ -54,6 +51,7 @@ class MVAE(nn.Module):
     def forward(self, x):
         # encode x 
         encoded = self.encoder(x)
+        # print(f"Encoded shape: {x.shape}")  # Should be something like [batch, channels, 8, 8]
 
         # sample latent area z from q given x
         mean, logvar = self.q(encoded)
@@ -63,9 +61,10 @@ class MVAE(nn.Module):
             self.feature_size, 
             self.feature_size
         )
-        
+        # print("before decoder", z_projected.shape)
         # recontruct x from latent space z
         x_reconstructed = self.decoder(z_projected)
+        # print(f"Decoded shape: {x_reconstructed.shape}")  # Should be [batch, 3, 32, 32]
 
         return (mean, logvar), x_reconstructed
 
