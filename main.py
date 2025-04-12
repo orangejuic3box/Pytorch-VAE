@@ -12,22 +12,25 @@ parser = argparse.ArgumentParser('VAE PyTorch implementation')
 parser.add_argument('--dataset', default='mnist',
                     choices=list(TRAIN_DATASETS.keys()))
 
-parser.add_argument('--kernel-num', type=int, default=64) #128
-parser.add_argument('--z-size', type=int, default=128 ) #64 #128
-parser.add_argument('--layers', type=int, default=5 ) #64 #128
+parser.add_argument('--kernel-num', type=int, default=16) #128
+parser.add_argument('--z-size', type=int, default=64 ) #64 #128
+parser.add_argument('--layers', type=int, default=3 ) #64 #128
 
-parser.add_argument('--epochs', type=int, default=30) #10
+parser.add_argument('--epochs', type=int, default=500) #10
+#                       BATCH SIZE SHOULD BE NUMBER OF PAIRS IN DATASET?
 parser.add_argument('--batch-size', type=int, default=64) #32
 parser.add_argument('--sample-size', type=int, default=32)
 
-parser.add_argument('--lr', type=float, default=5e-05) #5e-03 $5e-04 
+parser.add_argument('--lr', type=float, default=0.0005) #5e-03 $5e-04 
 #5e-03 is doing something interesting, had 1e-03 before
-parser.add_argument('--weight-decay', type=float, default=1e-3) #1e-03
+parser.add_argument('--weight-decay', type=float, default=1e-4) #1e-03
 
+parser.add_argument('--inter', type=int, default=100)
 parser.add_argument('--loss-log-interval', type=int, default=100)
 parser.add_argument('--image-log-interval', type=int, default=500)
 parser.add_argument('--resume', action='store_true')
 parser.add_argument('--checkpoint-dir', type=str, default='./checkpoints')
+parser.add_argument('--custom', type=str, default='')
 parser.add_argument('--sample-dir', type=str, default='./samples')
 parser.add_argument('--no-gpus', action='store_false', dest='cuda')
 
@@ -41,6 +44,7 @@ if __name__ == '__main__':
     cuda = args.cuda and torch.cuda.is_available()
     dataset_config = DATASET_CONFIGS[args.dataset]
     dataset = TRAIN_DATASETS[args.dataset]
+    print(len(dataset), "DATASET SIZE")
 
     #original vae model
     # vae = VAE(
@@ -75,6 +79,8 @@ if __name__ == '__main__':
             lr=args.lr,
             weight_decay=args.weight_decay,
             checkpoint_dir=args.checkpoint_dir,
+            custom=args.custom,
+            inter=args.inter,
             resume=args.resume,
             cuda=cuda,)
     elif args.train: #this is the og git version
