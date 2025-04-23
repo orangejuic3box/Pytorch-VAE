@@ -39,3 +39,25 @@ python main.py --train --dataset noisy_clean --epochs 25 --batch-size 64
 
 
 potentially change z in new model
+
+(8) run experiment
+python main.py --exp
+
+python main.py --exp --custom MVAE-16k-z64-noisy_clean-3layers/best-loss0.04207158461213112epoch1092/checkpoint.pth
+
+(9) generate images from the model
+python gen_images --checkpoint --batch_size(optional)
+
+checkpoint = ./checkpoints/MVAE-16k-z64-noisy_clean-3layers/epochs1000-1800-batch_size64-lr0.0005-wd0.0001/checkpoint.pth
+
+
+BEST SO FAR BELOW
+
+./checkpoints/MVAE-16k-z64-noisy_clean-3layers/best-loss0.04207158461213112epoch1092/checkpoint.pth
+
+/Users/magui/Desktop/Pytorch-VAE/checkpoints/MVAE-16k-z64-noisy_clean-3layers/best-loss0.04207158461213112epoch1092/checkpoint.pth
+
+
+NEXT
+(1) SAVE TENSOR OF RECONTRUCTED AND CLEAN
+(2) CALCULATE MSE/SSIM
