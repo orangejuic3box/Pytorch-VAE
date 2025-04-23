@@ -1,7 +1,8 @@
-Original Project did not work properly for CIFAR-10, unsure how they got their reconstructed samples.
-
 # Model adapted for WINTER 2025 RESEARCH: XAI for Generative Diffusion Models.
-Using a custom dataset (from a diffusion model) prepared for my experiment, VAE was trained to reconstruct a similar generated image from a noisy image during the diffusion process.
+Using a custom dataset (from a diffusion model) prepared for my experiment, VAE was trained to reconstruct the generated image from a noisy image during the diffusion process. Essentially mapping noise to a final image, however this task is quite hard and VAE underfits. 
+
+Original Project did not work properly for CIFAR-10, unsure how they got their reconstructed samples. 
+
 
 ## To run model:
 #### (1) only do this if you modify requirements.txt or changed envr like a reinstall
@@ -63,7 +64,7 @@ python main.py --train
 ```
 
 ## Experiment:
-Generates new images based off what wasn't used in training. Data is ordered for experiment purposes. Calculates MSE/SSIM metrics. Needs custom path to model checkpoint
+Generates new images based off what wasn't used in training. Data is ordered for experiment purposes. Calculates MSE/SSIM metrics. Needs custom path to model checkpoint.
 ```
 python main.py --exp
   [--custom CUSTOM]
