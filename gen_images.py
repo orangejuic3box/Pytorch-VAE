@@ -9,12 +9,30 @@ def parse_args():
     parser = argparse.ArgumentParser(description="Generate image from trained VAE model")
     parser.add_argument('--checkpoint', type=str, help="Full Path to the trained model checkpoint")
     parser.add_argument('--batch_size', type=int, default=64, help="Batch size for generating images")
+    parser.add_argument('--i', type=int, default=5, help="How many times?")
+
     return parser.parse_args()
+
+def remap_keys(state_dict):
+        new_state_dict = {}
+        for key in state_dict:
+            if key.startswith("q_mean.0"):
+                new_key = key.replace("q_mean.0", "q_mean")
+            elif key.startswith("q_logvar.0"):
+                new_key = key.replace("q_logvar.0", "q_logvar")
+            elif key.startswith("project.0"):
+                new_key = key.replace("project.0", "project")
+            else:
+                new_key = key
+            new_state_dict[new_key] = state_dict[key]
+        return new_state_dict
 
 # Step 2: Load model with correct parameters
 def load_model_from_checkpoint(checkpoint_path):
     #must be full checkpoint path
-    checkpoint = torch.load(checkpoint_path, map_location='cuda' if torch.cuda.is_available() else 'cpu')
+    # checkpoint = torch.load(checkpoint_path, map_location='cuda' if torch.cuda.is_available() else 'cpu')
+
+    checkpoint = torch.load(checkpoint_path)
 
     # Retrieve saved parameters from the checkpoint
     label = checkpoint['label']
@@ -28,14 +46,15 @@ def load_model_from_checkpoint(checkpoint_path):
     print("model made whats in the dict")
     print(checkpoint["state_dict"].keys())
 
+    remapped = remap_keys(checkpoint['state_dict'])
     # Load model weights
-    model.load_state_dict(checkpoint['state_dict'])
+    model.load_state_dict(remapped)
     model.eval()  # Set to evaluation mode
 
     return model, z_size
 
 # Step 3: Generate and visualize images
-def generate_image_from_model(checkpoint_path, batch_size=64):
+def generate_image_from_model(checkpoint_path,i, batch_size):
     model, z_size = load_model_from_checkpoint(checkpoint_path)
 
     # Generate random latent vectors
@@ -60,14 +79,16 @@ def generate_image_from_model(checkpoint_path, batch_size=64):
     image_to_display = (image_to_display - image_to_display.min()) / (image_to_display.max() - image_to_display.min())
 
     # Display a batch of images in Visdom (a grid of images)
-    vis.images(image_to_display, nrow=8, win='generated_images', opts=dict(title='Generated Images'))
+    vis.images(image_to_display, nrow=8, win='generated_images', opts=dict(title=f'Generated Images Batch{i}'))
 
 if __name__ == '__main__':
     args = parse_args()
     
     if args.checkpoint:
         #generates image to visdom server
-        generate_image_from_model(args.checkpoint, args.batch_size)
+        for i in range(args.i):
+            generate_image_from_model(args.checkpoint, i, batch_size=args.batch_size)
+            input("Press Enter to continue")
     else:
         #was checking decoder
         device = 'cuda' if torch.cuda.is_available() else 'cpu'
