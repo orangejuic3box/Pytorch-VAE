@@ -4,12 +4,14 @@ import torch
 import torchvision
 from model import VAE
 from mags_model import MVAE
-from data import TRAIN_DATASETS, DATASET_CONFIGS
-from train import train_model, train_model_nc
+from data import TRAIN_DATASETS, DATASET_CONFIGS, EXPERIMENT_DATASETS
+from train import train_model_nc
+from experiment import run_analysis
+
 
 
 parser = argparse.ArgumentParser('VAE PyTorch implementation')
-parser.add_argument('--dataset', default='mnist',
+parser.add_argument('--dataset', default='noisy_clean',
                     choices=list(TRAIN_DATASETS.keys()))
 
 parser.add_argument('--kernel-num', type=int, default=16) #128
@@ -35,28 +37,26 @@ parser.add_argument('--sample-dir', type=str, default='./samples')
 parser.add_argument('--no-gpus', action='store_false', dest='cuda')
 
 main_command = parser.add_mutually_exclusive_group(required=True)
-main_command.add_argument('--test', action='store_false', dest='train')
-main_command.add_argument('--train', action='store_true')
+
+main_command.add_argument('--train', action='store_const', const='train', dest='mode')
+main_command.add_argument('--test', action='store_const', const='test', dest='mode')
+main_command.add_argument('--exp', action='store_const', const='exp', dest='mode')
+
 
 
 if __name__ == '__main__':
     args = parser.parse_args()
     cuda = args.cuda and torch.cuda.is_available()
     dataset_config = DATASET_CONFIGS[args.dataset]
-    dataset = TRAIN_DATASETS[args.dataset]
+    if args.mode == "train":
+        dataset = TRAIN_DATASETS[args.dataset]
+    elif args.mode == "exp":
+        dataset = EXPERIMENT_DATASETS[args.dataset]
     print(len(dataset), "DATASET SIZE")
-
-    #original vae model
-    # vae = VAE(
-    #     label=args.dataset,
-    #     image_size=dataset_config['size'],
-    #     channel_num=dataset_config['channels'],
-    #     kernel_num=args.kernel_num,
-    #     z_size=args.z_size,
-    # )
 
     #MAGS VAE MODEL
     vae = MVAE(
+            #label name is the dataset
             label=args.dataset,
             image_size=dataset_config['size'],
             channel_num=dataset_config['channels'],
@@ -69,7 +69,7 @@ if __name__ == '__main__':
         vae.cuda()
 
     # run a test or a training process.
-    if args.dataset == "noisy_clean":
+    if args.mode == "train":
         print("training for noisy clean")
         train_model_nc(
             vae, dataset=dataset,
@@ -83,21 +83,14 @@ if __name__ == '__main__':
             inter=args.inter,
             resume=args.resume,
             cuda=cuda,)
-    elif args.train: #this is the og git version
-        print("training for NOT noisy clean")
-        train_model(
-            vae, dataset=dataset,
-            epochs=args.epochs,
-            batch_size=args.batch_size,
-            sample_size=args.sample_size,
-            lr=args.lr,
-            weight_decay=args.weight_decay,
-            checkpoint_dir=args.checkpoint_dir,
-            loss_log_interval=args.loss_log_interval,
-            image_log_interval=args.image_log_interval,
-            resume=args.resume,
-            cuda=cuda,
-        )
+    elif args.mode == "exp":
+        print("running analysis...")
+        if args.custom != "":
+            run_analysis(vae, dataset, custom=args.custom)
+        else:
+            run_analysis(vae, dataset)
+        
+    
     else: #this is not actually testing, this is just sampling from the model
         images = vae.sample(args.sample_size)
         torchvision.utils.save_image(images, args.sample_dir)
