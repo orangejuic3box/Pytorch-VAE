@@ -122,6 +122,6 @@ def get_nc_datasets():
     train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True) 
     test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
     val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
-    experiment_loader = DataLoader(experiment_dataset, batch_sampler=batch_size) #potentionally change this?
+    experiment_loader = DataLoader(experiment_dataset, batch_size=1, shuffle=False) #1 bc need to look 
 
     return train_loader, test_loader, val_loader, experiment_loader
