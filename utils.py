@@ -74,7 +74,7 @@ def load_checkpoint(model, model_dir, custom=""):
     ))
 
     print("attempting a thing")
-    print(model.encoder)
+    # print(model.encoder)
     
     # load parameters and return the checkpoint's epoch and precision.
     model.load_state_dict(checkpoint['state_dict'])
