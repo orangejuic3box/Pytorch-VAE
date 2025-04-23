@@ -46,7 +46,7 @@ kill pid
 conda deactivate
 ```
 
-## Train
+## Train:
 Check main.py for default parameters. Only thing that can't be changed is layers. Default parameters were for the ```noisy_clean``` dataset. Unsure of performance on cifar10. 
 ```
 python main.py --train
@@ -62,7 +62,7 @@ python main.py --train
  [--sample-dir SAMPLE_DIR] [--no-gpus]
 ```
 
-## Experiment
+## Experiment:
 Generates new images based off what wasn't used in training. Data is ordered for experiment purposes. Calculates MSE/SSIM metrics. Needs custom path to model checkpoint
 ```
 python main.py --exp
@@ -72,7 +72,7 @@ python main.py --exp
 python main.py --exp --custom MVAE-16k-z64-noisy_clean-3layers/best-loss0.04207158461213112epoch1092/checkpoint.pth
 ```
 
-## Generate Images From The Model
+## Generate Images From The Model:
 ```
 python gen_images.py
   [--checkpoint CHECKPOINT_PATH]
@@ -82,7 +82,7 @@ python gen_images.py
 python gen_images.py --checkpoint ./checkpoints/MVAE-16k-z64-noisy_clean-3layers/best-loss0.04207158461213112epoch1092/checkpoint.pth
 ```
 
-#### BEST MODELS SO FAR BELOW
+### BEST MODELS SO FAR BELOW
 
 ./checkpoints/MVAE-16k-z64-noisy_clean-3layers/best-loss0.04207158461213112epoch1092/checkpoint.pth
 
