@@ -13,7 +13,7 @@ import visual
 import math
 
 
-
+#not even the good one
 def train_model(model, dataset, epochs=10,
                 batch_size=32, sample_size=32,
                 lr=3e-04, weight_decay=1e-5,
@@ -157,6 +157,8 @@ def train_model_nc(model, dataset, epochs=10,
     
     print(f"STARTING AT EPOCH {epoch_start} AND GOING TILL EPOCH {epochs}")
 
+    best_loss = float('inf')
+
     for epoch in range(epoch_start, epochs+1):
 
         data_loader = dataset
@@ -249,6 +251,21 @@ def train_model_nc(model, dataset, epochs=10,
                     images, f'generated samples {parameter_str}',
                     env=model.name
                 )
+            
+            if total_loss < best_loss and epoch > 300:
+                best_loss = total_loss
+
+                model_dict = {"epochs":epochs,
+                      "batch_size":batch_size,
+                      "weight_decay":weight_decay,
+                      "lr":lr,
+                      "epoch":epoch,
+                      "optimizer": optimizer.state_dict()}
+
+                # save the checkpoint.
+                utils.save_checkpoint(model, checkpoint_dir+"/"+model.name+"/", model_dict, custom=f"best-loss{best_loss}epoch{epoch}")
+                print()
+
         
         #calculate epoch loss for lr optimizer
         epoch_loss /= len(data_loader)
