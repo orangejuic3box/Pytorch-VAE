@@ -1,4 +1,4 @@
-# Model adapted for WINTER 2025 RESEARCH: XAI for Generative Diffusion Models.
+# Model adapted for WINTER 2025 RESEARCH: XAI approaches for Generative Diffusion Models.
 Using a custom dataset (from a diffusion model) prepared for my experiment, VAE was trained to reconstruct the generated image from a noisy image during the diffusion process. Essentially mapping noise to a final image, however this task is quite hard and VAE underfits. 
 
 Original Project did not work properly for CIFAR-10, unsure how they got their reconstructed samples. 
@@ -84,10 +84,10 @@ python gen_images.py --checkpoint ./checkpoints/MVAE-16k-z64-noisy_clean-3layers
 ```
 
 ### BEST MODELS SO FAR BELOW
-
+```
 ./checkpoints/MVAE-16k-z64-noisy_clean-3layers/best-loss0.04207158461213112epoch1092/checkpoint.pth
 
 /Users/magui/Desktop/Pytorch-VAE/checkpoints/MVAE-16k-z64-noisy_clean-3layers/best-loss0.04207158461213112epoch1092/checkpoint.pth
 
 checkpoint = ./checkpoints/MVAE-16k-z64-noisy_clean-3layers/epochs1000-1800-batch_size64-lr0.0005-wd0.0001/checkpoint.pth
-
+```
